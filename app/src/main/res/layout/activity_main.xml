@@ -8,12 +8,12 @@
     android:orientation="vertical">
 
     <TextView
-        android:id="@+id/lblSorce"
+        android:id="@+id/lblScore"
         android:layout_width="match_parent"
         android:layout_height="40dp"
         android:gravity="center_vertical"
         android:paddingLeft="10dp"
-        android:text="Sorce: 100"
+        android:text="Sorce: 0"
         android:textSize="20sp" />
 
     <FrameLayout
