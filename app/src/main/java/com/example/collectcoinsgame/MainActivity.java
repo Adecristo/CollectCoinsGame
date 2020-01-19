@@ -2,6 +2,7 @@ package com.example.collectcoinsgame;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.graphics.Point;
 import android.media.Image;
 import android.os.Bundle;
@@ -19,7 +20,7 @@ import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
 
-    private TextView lblSorce;
+    private TextView lblScore;
     private TextView lblStart;
     private ImageView Player;
     private ImageView Coin;
@@ -29,9 +30,11 @@ public class MainActivity extends AppCompatActivity {
     private Handler handler = new Handler();
     private Timer timer = new Timer();
 
-    private int PlayerSpeed = 20;
+    private int PlayerSpeed = 10;
     private int CoinSpeed = 5;
-    private int Sorce = 0;
+    private int BallSpeed = 8;
+    
+    private int score = 0;
 
     private boolean holding = false;
     private boolean startFlag = false;
@@ -45,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        lblSorce =  (TextView) findViewById(R.id.lblSorce);
+        lblScore = (TextView) findViewById(R.id.lblScore);
         lblStart =  (TextView) findViewById(R.id.lblStart);
         Player = (ImageView) findViewById(R.id.player);
         Coin = (ImageView) findViewById(R.id.coin);
@@ -60,9 +63,10 @@ public class MainActivity extends AppCompatActivity {
         screenWidth = size.x;
         screenHeight = size.y;
 
-        lblStart.setVisibility(View.INVISIBLE);
         Coin.setX(-80);
         Coin.setY(-80);
+        Ball.setX(-80);
+        Ball.setY(-80);
 
     }
 
@@ -71,7 +75,20 @@ public class MainActivity extends AppCompatActivity {
         int playerSize = (int)Player.getHeight();
         int coinX = (int) Coin.getX();
         int coinY = (int) Coin.getY();
+        int ballX = (int) Ball.getX();
+        int ballY = (int) Ball.getY();
 
+        //coin hit
+        if(checkCollision(playerY,playerSize,coinX,coinY)){
+            score+=10;
+            coinX=-10;
+        }
+
+        //ball hit - game over
+        if(checkCollision(playerY,playerSize,ballX,ballY)){
+            GameOver();
+        }
+        
         //coin  move
         coinX -= CoinSpeed;
         if (coinX < 0) {
@@ -80,6 +97,15 @@ public class MainActivity extends AppCompatActivity {
         }
         Coin.setX(coinX);
         Coin.setY(coinY);
+
+        // ball
+        ballX -= BallSpeed;
+        if (ballX < 0) {
+            ballX = screenWidth + 10;
+            ballY = (int) Math.floor(Math.random() * (frmMainHeight - Ball.getHeight()));
+        }
+        Ball.setX(ballX);
+        Ball.setY(ballY);
 
         //player move
         if(holding)
@@ -91,7 +117,23 @@ public class MainActivity extends AppCompatActivity {
         if (playerY > frmMainHeight - playerSize) playerY = frmMainHeight - playerSize;
 
         Player.setY(playerY);
+        lblScore.setText("Score: "+score);
     }
+
+    private void GameOver() {
+        timer.cancel();
+        timer = null;
+        Intent intent = new Intent(this, result.class);
+        intent.putExtra("SCORE", score);
+        startActivity(intent);
+    }
+
+    private boolean checkCollision(int playerY, int playerSize, int objX, int objY) {
+        if (0 <= objX && objX <= playerSize &&
+                playerY <= objY && objY <= playerY + playerSize) return true;
+        else return false;
+    }
+
 
     public boolean onTouchEvent(MotionEvent me) {
         if (startFlag == false) {
@@ -112,7 +154,6 @@ public class MainActivity extends AppCompatActivity {
                     });
                 }
             }, 0, 20);
-
 
         } else {
             if (me.getAction() == MotionEvent.ACTION_DOWN) {
